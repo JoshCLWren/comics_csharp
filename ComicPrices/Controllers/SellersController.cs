@@ -44,5 +44,33 @@ namespace ComicPrices.Controllers
             // always a good practice to return the total count and the page size for clients to handle on their end.
             return Ok(new { TotalItems = totalItems, PageSize = pageSize, Items = sellers });
         }
+        [HttpGet("{id}/inventory")]
+        public async Task<IActionResult> GetInventory(int id)
+        {
+            var prices = await _context.Prices
+                .Include(price => price.Comic)
+                .Where(price => price.SellerId == id)
+                .GroupBy(p => p.ComicId)
+                .Select(gp => gp.OrderByDescending(p => p.DateRecorded).First())
+                .ToListAsync();
+
+            if (!prices.Any())
+            {
+                return NotFound();
+            }
+
+            var inventory = prices.Select(price => new
+            {
+                Comic = price.Comic.Name,
+                ComicId = price.ComicId,
+                Price = price.Amount,
+                DateRecorded = price.DateRecorded
+            }).ToList();
+
+            var totalComics = inventory.Count;
+            var totalPrice = inventory.Sum(item => item.Price);
+
+            return Ok(new { TotalComics = totalComics, TotalPrice = totalPrice, Comics = inventory });
+        }
     }
 }

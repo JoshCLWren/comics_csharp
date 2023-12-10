@@ -52,5 +52,24 @@ namespace ComicPrices.Controllers
             // always a good practice to return the total count and the page size for clients to handle on their end.
             return Ok(new { TotalItems = totalItems, PageSize = pageSize, Items = comics });
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteById(int id)
+        {
+            var comic = await _context.Comics.FindAsync(id);
+
+            if (comic == null)
+            {
+                return NotFound();
+            }
+
+            var prices = _context.Prices.Where(price => price.Comic.Id == id);
+
+            _context.Prices.RemoveRange(prices);
+            _context.Comics.Remove(comic);
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
