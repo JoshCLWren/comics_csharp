@@ -2,7 +2,7 @@ using ComicPrices.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<ComicsDbContext>(options =>
+builder.Services.AddDbContext<IComicsDbContext, ComicsDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
